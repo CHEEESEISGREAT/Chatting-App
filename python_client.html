@@ -398,8 +398,11 @@
                     updateScreenShares();
                 } else if (data.type === 'screen_frame') {
                     handleScreenFrame(data.sender, data.content);
-                } else {
-                    displayMessage(data);
+                } else if (data.type === 'text' || data.type === 'system') {
+                    // Only display if it's not from us (server already filters, but double check)
+                    if (data.sender !== username) {
+                        displayMessage(data);
+                    }
                 }
             };
             
