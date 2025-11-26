@@ -19,37 +19,52 @@
             min-height: 100vh;
         }
         .container {
-            width: 90%;
-            max-width: 1200px;
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
             background: #2d2d2d;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             overflow: hidden;
-        }
-        .login-screen, .chat-screen {
-            padding: 40px;
+            display: flex;
         }
         .login-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #2d2d2d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background: #3a3a3a;
+            padding: 40px;
+            border-radius: 8px;
             text-align: center;
+            min-width: 400px;
         }
-        .login-screen h1 {
-            margin-bottom: 30px;
+        .login-box h1 {
             color: #e0e0e0;
+            margin-bottom: 30px;
         }
-        .login-screen input {
+        .login-box input {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #444;
             border-radius: 4px;
             font-size: 16px;
-            background-color: #3a3a3a;
+            background-color: #2d2d2d;
             color: #e0e0e0;
         }
-        .login-screen input::placeholder {
+        .login-box input::placeholder {
             color: #888;
         }
-        .login-screen button {
+        .login-box button {
             width: 100%;
             padding: 12px;
             background-color: #4CAF50;
@@ -58,57 +73,89 @@
             border-radius: 4px;
             font-size: 16px;
             cursor: pointer;
+            margin-top: 10px;
         }
-        .login-screen button:hover {
+        .login-box button:hover {
             background-color: #45a049;
         }
-        .chat-screen {
-            display: none;
-            padding: 0;
-        }
-        .chat-header {
-            padding: 20px;
-            background-color: #4CAF50;
-            color: white;
+        .guild-sidebar {
+            width: 80px;
+            background-color: #1f1f1f;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            padding: 20px 10px;
+            gap: 10px;
         }
-        .chat-header h2 {
-            font-size: 20px;
-        }
-        .status {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        .main-content {
+        .guild-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #3a3a3a;
+            border-radius: 50%;
             display: flex;
-            height: 600px;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #e0e0e0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .guild-icon:hover {
+            background-color: #4CAF50;
+            border-radius: 15px;
+        }
+        .guild-icon.active {
+            background-color: #4CAF50;
+            border-radius: 15px;
+        }
+        .guild-icon.add {
+            background-color: #4CAF50;
+            font-size: 24px;
         }
         .voice-panel {
-            width: 300px;
+            width: 250px;
             background-color: #242424;
             border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+        }
+        .guild-info {
             padding: 20px;
+            border-bottom: 1px solid #444;
+            color: #e0e0e0;
+        }
+        .guild-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .invite-code {
+            font-size: 12px;
+            color: #888;
+            cursor: pointer;
+        }
+        .invite-code:hover {
+            color: #4CAF50;
+        }
+        .voice-section {
+            padding: 20px;
+            flex: 1;
             overflow-y: auto;
         }
-        .voice-panel h3 {
+        .voice-section h3 {
             color: #e0e0e0;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        .voice-controls {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
         .voice-button {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background-color: #2196F3;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             margin-bottom: 10px;
         }
         .voice-button:hover {
@@ -117,48 +164,41 @@
         .voice-button.active {
             background-color: #f44336;
         }
-        .voice-button.active:hover {
-            background-color: #da190b;
-        }
         .screen-button {
             background-color: #9C27B0;
         }
         .screen-button:hover {
             background-color: #7B1FA2;
         }
-        .screen-button.active {
-            background-color: #f44336;
-        }
-        .voice-users {
-            color: #e0e0e0;
-            margin-bottom: 20px;
-        }
         .voice-user {
-            padding: 10px;
+            padding: 8px;
             background-color: #3a3a3a;
             border-radius: 4px;
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: #e0e0e0;
         }
         .voice-user.speaking {
             border: 2px solid #4CAF50;
-            animation: pulse 1s infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        .volume-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #666;
         }
-        .screen-shares {
-            color: #e0e0e0;
+        .volume-indicator.active {
+            background-color: #4CAF50;
         }
         .screen-share-item {
-            padding: 10px;
+            padding: 8px;
             background-color: #3a3a3a;
             border-radius: 4px;
             margin-bottom: 8px;
             cursor: pointer;
+            color: #e0e0e0;
         }
         .screen-share-item:hover {
             background-color: #4a4a4a;
@@ -167,6 +207,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+        }
+        .chat-header {
+            padding: 20px;
+            background-color: #2d2d2d;
+            color: white;
+            border-bottom: 1px solid #444;
         }
         .messages {
             flex: 1;
@@ -179,7 +225,6 @@
             padding: 10px;
             background: #3a3a3a;
             border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .message-sender {
             font-weight: bold;
@@ -212,9 +257,6 @@
             background-color: #3a3a3a;
             color: #e0e0e0;
         }
-        .input-area input::placeholder {
-            color: #888;
-        }
         .input-area button {
             padding: 10px 20px;
             background-color: #4CAF50;
@@ -222,551 +264,417 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
         }
-        .input-area button:hover {
-            background-color: #45a049;
-        }
-        .hidden {
-            display: none;
-        }
-        .volume-indicator {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #666;
-        }
-        .volume-indicator.active {
-            background-color: #4CAF50;
-        }
-        .screen-modal {
+        .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 1000;
-            padding: 20px;
-        }
-        .screen-modal.active {
-            display: flex;
-            flex-direction: column;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 2000;
             justify-content: center;
             align-items: center;
         }
-        .screen-modal video {
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 8px;
+            min-width: 400px;
+        }
+        .modal-content h2 {
+            color: #e0e0e0;
+            margin-bottom: 20px;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+        }
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .modal-close {
+            background-color: #f44336 !important;
+        }
+        .screen-modal img {
             max-width: 90%;
             max-height: 80%;
             border-radius: 8px;
         }
-        .screen-modal-header {
-            color: white;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-        .screen-modal-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .screen-modal-close:hover {
-            background-color: #da190b;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Login Screen -->
-        <div class="login-screen" id="loginScreen">
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
             <h1>Join Chat</h1>
             <input type="text" id="usernameInput" placeholder="Enter your username" maxlength="20">
             <button onclick="login()">Join</button>
         </div>
+    </div>
 
-        <!-- Chat Screen -->
-        <div class="chat-screen" id="chatScreen">
-            <div class="chat-header">
-                <h2>Chat Room</h2>
-                <span class="status" id="status">Connecting...</span>
+    <!-- Main App -->
+    <div class="container" id="mainApp" style="display:none;">
+        <!-- Guild Sidebar -->
+        <div class="guild-sidebar" id="guildSidebar">
+            <div class="guild-icon add" onclick="showGuildModal()">+</div>
+        </div>
+
+        <!-- Voice Panel -->
+        <div class="voice-panel">
+            <div class="guild-info">
+                <div class="guild-name" id="guildName">Select a guild</div>
+                <div class="invite-code" id="inviteCode" onclick="copyInvite()">Click to copy invite</div>
             </div>
-            <div class="main-content">
-                <!-- Voice Panel -->
-                <div class="voice-panel">
-                    <h3>Voice Chat</h3>
-                    <div class="voice-controls">
-                        <button class="voice-button" id="joinVoiceBtn" onclick="toggleVoiceChat()">🎤 Join Voice</button>
-                        <button class="voice-button" id="muteBtn" onclick="toggleMute()" style="display:none;">🔇 Mute</button>
-                        <button class="voice-button screen-button" id="screenBtn" onclick="toggleScreenShare()">🖥️ Share Screen</button>
-                    </div>
-                    <h3>In Voice (<span id="voiceCount">0</span>)</h3>
-                    <div class="voice-users" id="voiceUsers">
-                        <div style="color: #888; font-size: 14px;">No one in voice chat</div>
-                    </div>
-                    <h3>Screen Shares</h3>
-                    <div class="screen-shares" id="screenShares">
-                        <div style="color: #888; font-size: 14px;">No active screen shares</div>
-                    </div>
-                </div>
+            <div class="voice-section">
+                <h3>Voice</h3>
+                <button class="voice-button" id="joinVoiceBtn" onclick="toggleVoice()">🎤 Join Voice</button>
+                <button class="voice-button" id="muteBtn" onclick="toggleMute()" style="display:none;">🔊 Mute</button>
+                <button class="voice-button screen-button" id="screenBtn" onclick="toggleScreen()">🖥️ Share Screen</button>
+                
+                <h3>In Voice (<span id="voiceCount">0</span>)</h3>
+                <div id="voiceUsers"></div>
+                
+                <h3>Screen Shares</h3>
+                <div id="screenShares"></div>
+            </div>
+        </div>
 
-                <!-- Chat Panel -->
-                <div class="chat-panel">
-                    <div class="messages" id="messages"></div>
-                    <div class="input-area">
-                        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-                        <button onclick="sendMessage()">Send</button>
-                    </div>
-                </div>
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <span id="status">Connected</span>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="input-area">
+                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
+                <button onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
 
+    <!-- Guild Modal -->
+    <div class="modal" id="guildModal">
+        <div class="modal-content">
+            <h2>Create or Join Guild</h2>
+            <input type="text" id="guildNameInput" placeholder="Guild name">
+            <button onclick="createGuild()">Create Guild</button>
+            <hr style="margin: 20px 0; border-color: #444;">
+            <input type="text" id="inviteCodeInput" placeholder="Invite code">
+            <button onclick="joinGuild()">Join Guild</button>
+            <button class="modal-close" onclick="closeGuildModal()">Close</button>
+        </div>
+    </div>
+
     <!-- Screen Share Modal -->
-    <div class="screen-modal" id="screenModal">
-        <button class="screen-modal-close" onclick="closeScreenModal()">Close</button>
-        <div class="screen-modal-header" id="screenModalHeader">Screen Share</div>
-        <video id="screenVideo" autoplay></video>
+    <div class="modal screen-modal" id="screenModal">
+        <button style="position:absolute;top:20px;right:20px;padding:10px 20px;background:#f44336;color:white;border:none;border-radius:4px;cursor:pointer;" onclick="closeScreenModal()">Close</button>
+        <div style="color:white;margin-bottom:20px;font-size:20px;" id="screenModalHeader">Screen Share</div>
+        <img id="screenImage">
     </div>
 
     <script>
         let ws = null;
         let username = '';
-        let inVoiceChat = false;
+        let currentGuild = null;
+        let guilds = [];
+        let inVoice = false;
         let isMuted = false;
-        let localStream = null;
-        let audioContext = null;
-        let voiceUsers = new Set();
-        let screenStream = null;
         let isScreenSharing = false;
-        let screenShares = new Map();
+        let mediaRecorder = null;
+        let screenStream = null;
+        let voiceUsers = [];
+        let screenUsers = [];
 
-        function login() {
-            const usernameInput = document.getElementById('usernameInput').value.trim();
-            
-            if (!usernameInput) {
-                alert('Please enter a username');
+        async function login() {
+            username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Enter a username');
                 return;
             }
-            
-            username = usernameInput;
-            
-            // Hide login, show chat
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('chatScreen').style.display = 'block';
-            
-            // Connect to WebSocket
-            connectWebSocket('wss://chatting-9qbc.onrender.com');
-        }
 
-        function connectWebSocket(serverAddress) {
-            ws = new WebSocket(serverAddress);
+            ws = new WebSocket('wss://chatting-9qbc.onrender.com');
             
             ws.onopen = () => {
-                document.getElementById('status').textContent = 'Connected';
-                // Send join notification
-                ws.send(JSON.stringify({
-                    type: 'system',
-                    sender: 'System',
-                    content: `${username} joined the chat`
-                }));
+                ws.send(JSON.stringify({ type: 'auth', username }));
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
             };
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                if (data.type === 'voice_join') {
-                    voiceUsers.add(data.sender);
-                    updateVoiceUsers();
-                } else if (data.type === 'voice_leave') {
-                    voiceUsers.delete(data.sender);
-                    updateVoiceUsers();
-                } else if (data.type === 'voice_data') {
-                    playAudioData(data.sender, data.content);
-                } else if (data.type === 'screen_start') {
-                    screenShares.set(data.sender, true);
-                    updateScreenShares();
-                } else if (data.type === 'screen_stop') {
-                    screenShares.delete(data.sender);
-                    updateScreenShares();
-                } else if (data.type === 'screen_frame') {
-                    handleScreenFrame(data.sender, data.content);
-                } else if (data.type === 'text' || data.type === 'system') {
-                    // Only display if it's not from us (server already filters, but double check)
-                    if (data.sender !== username) {
-                        displayMessage(data);
-                    }
-                }
-            };
-            
+
+            ws.onmessage = handleMessage;
+            ws.onerror = (e) => console.error('WebSocket error:', e);
             ws.onclose = () => {
                 document.getElementById('status').textContent = 'Disconnected';
-                if (inVoiceChat) {
-                    leaveVoiceChat();
-                }
-                if (isScreenSharing) {
-                    stopScreenShare();
-                }
+                if (inVoice) toggleVoice();
+                if (isScreenSharing) toggleScreen();
             };
+        }
+
+        function handleMessage(event) {
+            const data = JSON.parse(event.data);
             
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                document.getElementById('status').textContent = 'Connection Error';
-            };
+            if (data.type === 'guild_list') {
+                guilds = data.guilds;
+                renderGuilds();
+            } else if (data.type === 'guild_created' || data.type === 'guild_joined') {
+                guilds.push(data.guild);
+                renderGuilds();
+                switchGuild(data.guild.id);
+                closeGuildModal();
+            } else if (data.type === 'message_history') {
+                document.getElementById('messages').innerHTML = '';
+                data.messages.forEach(msg => displayMessage(msg, false));
+            } else if (data.type === 'voice_state') {
+                voiceUsers = data.users;
+                updateVoiceUsers();
+            } else if (data.type === 'screen_state') {
+                screenUsers = data.users;
+                updateScreenUsers();
+            } else if (data.type === 'text') {
+                displayMessage(data, false);
+            } else if (data.type === 'voice_join') {
+                if (!voiceUsers.includes(data.sender)) {
+                    voiceUsers.push(data.sender);
+                    updateVoiceUsers();
+                }
+            } else if (data.type === 'voice_leave') {
+                voiceUsers = voiceUsers.filter(u => u !== data.sender);
+                updateVoiceUsers();
+            } else if (data.type === 'voice_data') {
+                playAudio(data.sender, data.content);
+            } else if (data.type === 'screen_start') {
+                if (!screenUsers.includes(data.sender)) {
+                    screenUsers.push(data.sender);
+                    updateScreenUsers();
+                }
+            } else if (data.type === 'screen_stop') {
+                screenUsers = screenUsers.filter(u => u !== data.sender);
+                updateScreenUsers();
+            } else if (data.type === 'screen_frame') {
+                handleScreenFrame(data.sender, data.content);
+            }
+        }
+
+        function renderGuilds() {
+            const sidebar = document.getElementById('guildSidebar');
+            const existing = sidebar.querySelectorAll('.guild-icon:not(.add)');
+            existing.forEach(el => el.remove());
+
+            guilds.forEach(guild => {
+                const icon = document.createElement('div');
+                icon.className = 'guild-icon';
+                icon.textContent = guild.name[0].toUpperCase();
+                icon.title = guild.name;
+                icon.onclick = () => switchGuild(guild.id);
+                if (currentGuild && currentGuild.id === guild.id) {
+                    icon.classList.add('active');
+                }
+                sidebar.appendChild(icon);
+            });
+        }
+
+        function switchGuild(guildId) {
+            currentGuild = guilds.find(g => g.id === guildId);
+            if (!currentGuild) return;
+
+            document.getElementById('guildName').textContent = currentGuild.name;
+            document.getElementById('inviteCode').textContent = `Invite: ${currentGuild.invite_code}`;
+            document.getElementById('messages').innerHTML = '';
+            
+            ws.send(JSON.stringify({ type: 'switch_guild', guild_id: guildId }));
+            renderGuilds();
         }
 
         function sendMessage() {
             const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message || !ws || ws.readyState !== WebSocket.OPEN) {
-                return;
-            }
-            
-            // Display your own message immediately
-            displayMessage({
-                type: 'text',
-                sender: username,
-                content: message,
-                timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-            });
-            
-            // Then send to server (which broadcasts to others)
-            ws.send(JSON.stringify({
-                type: 'text',
-                sender: username,
-                content: message
-            }));
-            
+            const content = input.value.trim();
+            if (!content || !currentGuild) return;
+
+            const msg = { type: 'text', sender: username, content };
+            displayMessage(msg, true);
+            ws.send(JSON.stringify(msg));
             input.value = '';
         }
 
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
+        function displayMessage(data, isOwn) {
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = `
+                <div class="message-sender">${data.sender}</div>
+                <div class="message-content">${data.content}</div>
+                <div class="message-time">${data.timestamp || ''}</div>
+            `;
+            document.getElementById('messages').appendChild(div);
+            document.getElementById('messages').scrollTop = 999999;
         }
 
-        function displayMessage(data) {
-            const messagesDiv = document.getElementById('messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            
-            const senderDiv = document.createElement('div');
-            senderDiv.className = 'message-sender';
-            senderDiv.textContent = data.sender;
-            
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            contentDiv.textContent = data.content;
-            
-            const timeDiv = document.createElement('div');
-            timeDiv.className = 'message-time';
-            timeDiv.textContent = data.timestamp || '';
-            
-            messageDiv.appendChild(senderDiv);
-            messageDiv.appendChild(contentDiv);
-            messageDiv.appendChild(timeDiv);
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        async function toggleVoiceChat() {
-            if (!inVoiceChat) {
-                await joinVoiceChat();
-            } else {
-                leaveVoiceChat();
-            }
-        }
-
-        async function joinVoiceChat() {
-            try {
-                // Request microphone access
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true,
-                        sampleRate: 16000
-                    } 
+        async function toggleVoice() {
+            if (!inVoice) {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 } 
                 });
-                
-                // Setup audio context for processing
-                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-                const source = audioContext.createMediaStreamSource(localStream);
-                const processor = audioContext.createScriptProcessor(2048, 1, 1);
-                
-                source.connect(processor);
-                processor.connect(audioContext.destination);
-                
-                let lastSendTime = 0;
-                const sendInterval = 100; // Send every 100ms
-                
-                processor.onaudioprocess = (e) => {
-                    const now = Date.now();
-                    if (!isMuted && ws && ws.readyState === WebSocket.OPEN && (now - lastSendTime) >= sendInterval) {
-                        lastSendTime = now;
-                        
-                        const audioData = e.inputBuffer.getChannelData(0);
-                        
-                        // Downsample to reduce size
-                        const downsampleFactor = 4;
-                        const downsampled = [];
-                        for (let i = 0; i < audioData.length; i += downsampleFactor) {
-                            downsampled.push(audioData[i]);
-                        }
-                        
-                        try {
-                            ws.send(JSON.stringify({
-                                type: 'voice_data',
-                                sender: username,
-                                content: downsampled
-                            }));
-                        } catch (err) {
-                            console.error('Failed to send audio:', err);
-                        }
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                mediaRecorder.ondataavailable = (e) => {
+                    if (!isMuted && e.data.size > 0) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            ws.send(JSON.stringify({ type: 'voice_data', sender: username, content: reader.result.split(',')[1] }));
+                        };
+                        reader.readAsDataURL(e.data);
                     }
                 };
-                
-                inVoiceChat = true;
+                mediaRecorder.start(20);
+                inVoice = true;
                 document.getElementById('joinVoiceBtn').textContent = '📞 Leave Voice';
                 document.getElementById('joinVoiceBtn').classList.add('active');
                 document.getElementById('muteBtn').style.display = 'block';
-                
-                // Notify others
-                ws.send(JSON.stringify({
-                    type: 'voice_join',
-                    sender: username
-                }));
-                
-                voiceUsers.add(username);
+                ws.send(JSON.stringify({ type: 'voice_join', sender: username }));
+                voiceUsers.push(username);
                 updateVoiceUsers();
-                
-            } catch (error) {
-                console.error('Error accessing microphone:', error);
-                alert('Could not access microphone. Please check permissions.');
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                inVoice = false;
+                document.getElementById('joinVoiceBtn').textContent = '🎤 Join Voice';
+                document.getElementById('joinVoiceBtn').classList.remove('active');
+                document.getElementById('muteBtn').style.display = 'none';
+                ws.send(JSON.stringify({ type: 'voice_leave', sender: username }));
+                voiceUsers = voiceUsers.filter(u => u !== username);
+                updateVoiceUsers();
             }
-        }
-
-        function leaveVoiceChat() {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            if (audioContext) {
-                audioContext.close();
-                audioContext = null;
-            }
-            
-            inVoiceChat = false;
-            isMuted = false;
-            document.getElementById('joinVoiceBtn').textContent = '🎤 Join Voice';
-            document.getElementById('joinVoiceBtn').classList.remove('active');
-            document.getElementById('muteBtn').style.display = 'none';
-            
-            // Notify others
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'voice_leave',
-                    sender: username
-                }));
-            }
-            
-            voiceUsers.delete(username);
-            updateVoiceUsers();
         }
 
         function toggleMute() {
             isMuted = !isMuted;
-            const btn = document.getElementById('muteBtn');
-            if (isMuted) {
-                btn.textContent = '🔇 Unmute';
-                btn.style.backgroundColor = '#f44336';
-            } else {
-                btn.textContent = '🔊 Mute';
-                btn.style.backgroundColor = '#2196F3';
-            }
+            document.getElementById('muteBtn').textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
         }
 
-        async function toggleScreenShare() {
+        async function toggleScreen() {
             if (!isScreenSharing) {
-                await startScreenShare();
-            } else {
-                stopScreenShare();
-            }
-        }
-
-        async function startScreenShare() {
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: {
-                        cursor: "always",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
+                screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: { width: 1280, height: 720, frameRate: 5 } 
                 });
-
                 isScreenSharing = true;
                 document.getElementById('screenBtn').textContent = '🛑 Stop Sharing';
                 document.getElementById('screenBtn').classList.add('active');
+                ws.send(JSON.stringify({ type: 'screen_start', sender: username }));
+                screenUsers.push(username);
+                updateScreenUsers();
 
-                // Notify others
-                ws.send(JSON.stringify({
-                    type: 'screen_start',
-                    sender: username
-                }));
-
-                screenShares.set(username, true);
-                updateScreenShares();
-
-                // Capture frames and send them
                 const video = document.createElement('video');
                 video.srcObject = screenStream;
                 video.autoplay = true;
-                video.muted = true;
-
                 const canvas = document.createElement('canvas');
+                canvas.width = 1280;
+                canvas.height = 720;
                 const ctx = canvas.getContext('2d');
 
-                video.addEventListener('loadedmetadata', () => {
-                    // Set reasonable canvas size
-                    canvas.width = 1280;
-                    canvas.height = 720;
-                });
-
                 const sendFrame = () => {
-                    if (!isScreenSharing || !video.videoWidth) return;
-
-                    // Draw scaled down video to canvas
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                    // Compress heavily for better performance
-                    const frameData = canvas.toDataURL('image/jpeg', 0.3);
-                    
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        try {
-                            ws.send(JSON.stringify({
-                                type: 'screen_frame',
-                                sender: username,
-                                content: frameData
-                            }));
-                        } catch (e) {
-                            console.error('Failed to send frame:', e);
-                        }
-                    }
-
-                    setTimeout(sendFrame, 200); // 5 FPS for better bandwidth
+                    if (!isScreenSharing) return;
+                    ctx.drawImage(video, 0, 0, 1280, 720);
+                    const frame = canvas.toDataURL('image/jpeg', 0.5);
+                    ws.send(JSON.stringify({ type: 'screen_frame', sender: username, content: frame }));
+                    setTimeout(sendFrame, 200);
                 };
-
-                // Wait for video to be ready
-                video.onloadeddata = () => {
-                    sendFrame();
-                };
-
-                // Handle when user stops sharing via browser UI
-                screenStream.getVideoTracks()[0].onended = () => {
-                    stopScreenShare();
-                };
-
-            } catch (error) {
-                console.error('Error sharing screen:', error);
-                alert('Could not share screen. Please check permissions.');
+                video.onloadeddata = sendFrame;
+                screenStream.getVideoTracks()[0].onended = toggleScreen;
+            } else {
+                screenStream.getTracks().forEach(t => t.stop());
+                isScreenSharing = false;
+                document.getElementById('screenBtn').textContent = '🖥️ Share Screen';
+                document.getElementById('screenBtn').classList.remove('active');
+                ws.send(JSON.stringify({ type: 'screen_stop', sender: username }));
+                screenUsers = screenUsers.filter(u => u !== username);
+                updateScreenUsers();
             }
-        }
-
-        function stopScreenShare() {
-            if (screenStream) {
-                screenStream.getTracks().forEach(track => track.stop());
-                screenStream = null;
-            }
-
-            isScreenSharing = false;
-            document.getElementById('screenBtn').textContent = '🖥️ Share Screen';
-            document.getElementById('screenBtn').classList.remove('active');
-
-            // Notify others
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'screen_stop',
-                    sender: username
-                }));
-            }
-
-            screenShares.delete(username);
-            updateScreenShares();
         }
 
         function updateVoiceUsers() {
-            const voiceUsersDiv = document.getElementById('voiceUsers');
-            const countSpan = document.getElementById('voiceCount');
-            
-            countSpan.textContent = voiceUsers.size;
-            
-            if (voiceUsers.size === 0) {
-                voiceUsersDiv.innerHTML = '<div style="color: #888; font-size: 14px;">No one in voice chat</div>';
-                return;
+            const div = document.getElementById('voiceUsers');
+            document.getElementById('voiceCount').textContent = voiceUsers.length;
+            if (voiceUsers.length === 0) {
+                div.innerHTML = '<div style="color:#888;font-size:12px;">No one in voice</div>';
+            } else {
+                div.innerHTML = voiceUsers.map(u => `
+                    <div class="voice-user" id="voice-${u}">
+                        <span>${u}</span>
+                        <div class="volume-indicator" id="vol-${u}"></div>
+                    </div>
+                `).join('');
             }
-            
-            voiceUsersDiv.innerHTML = '';
-            voiceUsers.forEach(user => {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'voice-user';
-                userDiv.innerHTML = `
-                    <span>${user}</span>
-                    <div class="volume-indicator" id="vol-${user}"></div>
-                `;
-                voiceUsersDiv.appendChild(userDiv);
-            });
         }
 
-        function updateScreenShares() {
-            const screenSharesDiv = document.getElementById('screenShares');
-            
-            if (screenShares.size === 0) {
-                screenSharesDiv.innerHTML = '<div style="color: #888; font-size: 14px;">No active screen shares</div>';
-                return;
+        function updateScreenUsers() {
+            const div = document.getElementById('screenShares');
+            if (screenUsers.length === 0) {
+                div.innerHTML = '<div style="color:#888;font-size:12px;">No screen shares</div>';
+            } else {
+                div.innerHTML = screenUsers.map(u => `
+                    <div class="screen-share-item" onclick="viewScreen('${u}')">${u}'s screen</div>
+                `).join('');
             }
-            
-            screenSharesDiv.innerHTML = '';
-            screenShares.forEach((value, user) => {
-                const shareDiv = document.createElement('div');
-                shareDiv.className = 'screen-share-item';
-                shareDiv.textContent = `${user}'s screen`;
-                shareDiv.onclick = () => viewScreenShare(user);
-                screenSharesDiv.appendChild(shareDiv);
-            });
         }
 
-        function viewScreenShare(user) {
+        async function playAudio(sender, base64) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const blob = new Blob([bytes], { type: 'audio/webm;codecs=opus' });
+            const audio = new Audio(URL.createObjectURL(blob));
+            audio.onplay = () => {
+                const ind = document.getElementById(`vol-${sender}`);
+                if (ind) {
+                    ind.classList.add('active');
+                    const userDiv = document.getElementById(`voice-${sender}`);
+                    if (userDiv) userDiv.classList.add('speaking');
+                }
+            };
+            audio.onended = () => {
+                const ind = document.getElementById(`vol-${sender}`);
+                if (ind) {
+                    ind.classList.remove('active');
+                    const userDiv = document.getElementById(`voice-${sender}`);
+                    if (userDiv) userDiv.classList.remove('speaking');
+                }
+                URL.revokeObjectURL(audio.src);
+            };
+            await audio.play();
+        }
+
+        function handleScreenFrame(sender, frame) {
+            if (!window.screenFrames) window.screenFrames = {};
+            window.screenFrames[sender] = frame;
             const modal = document.getElementById('screenModal');
             const header = document.getElementById('screenModalHeader');
-            
-            header.textContent = `${user}'s Screen`;
-            modal.classList.add('active');
-            
-            // Show the latest frame if available
-            if (window.latestScreenFrames && window.latestScreenFrames.has(user)) {
-                const video = document.getElementById('screenVideo');
-                video.style.display = 'none';
-                
-                if (!modal.screenImg) {
-                    modal.screenImg = document.createElement('img');
-                    modal.screenImg.style.maxWidth = '90%';
-                    modal.screenImg.style.maxHeight = '80%';
-                    modal.screenImg.style.borderRadius = '8px';
-                    video.parentElement.appendChild(modal.screenImg);
-                }
-                modal.screenImg.src = window.latestScreenFrames.get(user);
+            if (modal.classList.contains('active') && header.textContent === `${sender}'s Screen`) {
+                document.getElementById('screenImage').src = frame;
+            }
+        }
+
+        function viewScreen(user) {
+            document.getElementById('screenModalHeader').textContent = `${user}'s Screen`;
+            document.getElementById('screenModal').classList.add('active');
+            if (window.screenFrames && window.screenFrames[user]) {
+                document.getElementById('screenImage').src = window.screenFrames[user];
             }
         }
 
@@ -774,68 +682,30 @@
             document.getElementById('screenModal').classList.remove('active');
         }
 
-        function handleScreenFrame(sender, frameData) {
-            // Store the latest frame for this user
-            const video = document.getElementById('screenVideo');
-            const modal = document.getElementById('screenModal');
-            const header = document.getElementById('screenModalHeader');
-            
-            // If we're currently viewing this user's screen, update it
-            if (modal.classList.contains('active') && header.textContent === `${sender}'s Screen`) {
-                // Use an img element instead of video for data URLs
-                if (!modal.screenImg) {
-                    modal.screenImg = document.createElement('img');
-                    modal.screenImg.style.maxWidth = '90%';
-                    modal.screenImg.style.maxHeight = '80%';
-                    modal.screenImg.style.borderRadius = '8px';
-                    video.style.display = 'none';
-                    video.parentElement.appendChild(modal.screenImg);
-                }
-                modal.screenImg.src = frameData;
-            }
-            
-            // Store latest frame for each user
-            if (!window.latestScreenFrames) {
-                window.latestScreenFrames = new Map();
-            }
-            window.latestScreenFrames.set(sender, frameData);
+        function showGuildModal() {
+            document.getElementById('guildModal').classList.add('active');
         }
 
-        function playAudioData(sender, audioData) {
-            try {
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-                }
-                
-                // Create audio buffer
-                const buffer = audioContext.createBuffer(1, audioData.length, audioContext.sampleRate);
-                const channelData = buffer.getChannelData(0);
-                
-                for (let i = 0; i < audioData.length; i++) {
-                    channelData[i] = audioData[i];
-                }
-                
-                // Play the audio
-                const source = audioContext.createBufferSource();
-                source.buffer = buffer;
-                
-                // Add gain control for volume
-                const gainNode = audioContext.createGain();
-                gainNode.gain.value = 1.5; // Boost volume slightly
-                
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                source.start(0);
-                
-                // Visual indicator
-                const indicator = document.getElementById(`vol-${sender}`);
-                if (indicator) {
-                    indicator.classList.add('active');
-                    setTimeout(() => indicator.classList.remove('active'), 150);
-                }
-            } catch (error) {
-                console.error('Error playing audio:', error);
-            }
+        function closeGuildModal() {
+            document.getElementById('guildModal').classList.remove('active');
+        }
+
+        function createGuild() {
+            const name = document.getElementById('guildNameInput').value.trim();
+            if (!name) return alert('Enter guild name');
+            ws.send(JSON.stringify({ type: 'create_guild', name }));
+        }
+
+        function joinGuild() {
+            const code = document.getElementById('inviteCodeInput').value.trim().toUpperCase();
+            if (!code) return alert('Enter invite code');
+            ws.send(JSON.stringify({ type: 'join_guild', invite_code: code }));
+        }
+
+        function copyInvite() {
+            if (!currentGuild) return;
+            navigator.clipboard.writeText(currentGuild.invite_code);
+            alert('Invite code copied!');
         }
     </script>
 </body>
