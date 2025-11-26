@@ -494,28 +494,45 @@
                     audio: {
                         echoCancellation: true,
                         noiseSuppression: true,
-                        autoGainControl: true
+                        autoGainControl: true,
+                        sampleRate: 16000
                     } 
                 });
                 
                 // Setup audio context for processing
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
                 const source = audioContext.createMediaStreamSource(localStream);
-                const processor = audioContext.createScriptProcessor(4096, 1, 1);
+                const processor = audioContext.createScriptProcessor(2048, 1, 1);
                 
                 source.connect(processor);
                 processor.connect(audioContext.destination);
                 
+                let lastSendTime = 0;
+                const sendInterval = 100; // Send every 100ms
+                
                 processor.onaudioprocess = (e) => {
-                    if (!isMuted && ws && ws.readyState === WebSocket.OPEN) {
+                    const now = Date.now();
+                    if (!isMuted && ws && ws.readyState === WebSocket.OPEN && (now - lastSendTime) >= sendInterval) {
+                        lastSendTime = now;
+                        
                         const audioData = e.inputBuffer.getChannelData(0);
-                        // Convert to base64 for transmission
-                        const dataArray = Array.from(audioData);
-                        ws.send(JSON.stringify({
-                            type: 'voice_data',
-                            sender: username,
-                            content: dataArray
-                        }));
+                        
+                        // Downsample to reduce size
+                        const downsampleFactor = 4;
+                        const downsampled = [];
+                        for (let i = 0; i < audioData.length; i += downsampleFactor) {
+                            downsampled.push(audioData[i]);
+                        }
+                        
+                        try {
+                            ws.send(JSON.stringify({
+                                type: 'voice_data',
+                                sender: username,
+                                content: downsampled
+                            }));
+                        } catch (err) {
+                            console.error('Failed to send audio:', err);
+                        }
                     }
                 };
                 
@@ -592,7 +609,9 @@
             try {
                 screenStream = await navigator.mediaDevices.getDisplayMedia({
                     video: {
-                        cursor: "always"
+                        cursor: "always",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     },
                     audio: false
                 });
@@ -613,30 +632,46 @@
                 // Capture frames and send them
                 const video = document.createElement('video');
                 video.srcObject = screenStream;
-                video.play();
+                video.autoplay = true;
+                video.muted = true;
 
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
+                video.addEventListener('loadedmetadata', () => {
+                    // Set reasonable canvas size
+                    canvas.width = 1280;
+                    canvas.height = 720;
+                });
+
                 const sendFrame = () => {
-                    if (!isScreenSharing) return;
+                    if (!isScreenSharing || !video.videoWidth) return;
 
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    ctx.drawImage(video, 0, 0);
+                    // Draw scaled down video to canvas
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                    // Compress and send frame
-                    const frameData = canvas.toDataURL('image/jpeg', 0.5);
-                    ws.send(JSON.stringify({
-                        type: 'screen_frame',
-                        sender: username,
-                        content: frameData
-                    }));
+                    // Compress heavily for better performance
+                    const frameData = canvas.toDataURL('image/jpeg', 0.3);
+                    
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        try {
+                            ws.send(JSON.stringify({
+                                type: 'screen_frame',
+                                sender: username,
+                                content: frameData
+                            }));
+                        } catch (e) {
+                            console.error('Failed to send frame:', e);
+                        }
+                    }
 
-                    setTimeout(sendFrame, 100); // ~10 FPS
+                    setTimeout(sendFrame, 200); // 5 FPS for better bandwidth
                 };
 
-                sendFrame();
+                // Wait for video to be ready
+                video.onloadeddata = () => {
+                    sendFrame();
+                };
 
                 // Handle when user stops sharing via browser UI
                 screenStream.getVideoTracks()[0].onended = () => {
@@ -713,9 +748,26 @@
         }
 
         function viewScreenShare(user) {
-            // Will show the screen in modal when frames arrive
-            document.getElementById('screenModalHeader').textContent = `${user}'s Screen`;
-            document.getElementById('screenModal').classList.add('active');
+            const modal = document.getElementById('screenModal');
+            const header = document.getElementById('screenModalHeader');
+            
+            header.textContent = `${user}'s Screen`;
+            modal.classList.add('active');
+            
+            // Show the latest frame if available
+            if (window.latestScreenFrames && window.latestScreenFrames.has(user)) {
+                const video = document.getElementById('screenVideo');
+                video.style.display = 'none';
+                
+                if (!modal.screenImg) {
+                    modal.screenImg = document.createElement('img');
+                    modal.screenImg.style.maxWidth = '90%';
+                    modal.screenImg.style.maxHeight = '80%';
+                    modal.screenImg.style.borderRadius = '8px';
+                    video.parentElement.appendChild(modal.screenImg);
+                }
+                modal.screenImg.src = window.latestScreenFrames.get(user);
+            }
         }
 
         function closeScreenModal() {
@@ -728,33 +780,61 @@
             const modal = document.getElementById('screenModal');
             const header = document.getElementById('screenModalHeader');
             
-            // If we're currently viewing this user's screen
+            // If we're currently viewing this user's screen, update it
             if (modal.classList.contains('active') && header.textContent === `${sender}'s Screen`) {
-                video.src = frameData;
+                // Use an img element instead of video for data URLs
+                if (!modal.screenImg) {
+                    modal.screenImg = document.createElement('img');
+                    modal.screenImg.style.maxWidth = '90%';
+                    modal.screenImg.style.maxHeight = '80%';
+                    modal.screenImg.style.borderRadius = '8px';
+                    video.style.display = 'none';
+                    video.parentElement.appendChild(modal.screenImg);
+                }
+                modal.screenImg.src = frameData;
             }
+            
+            // Store latest frame for each user
+            if (!window.latestScreenFrames) {
+                window.latestScreenFrames = new Map();
+            }
+            window.latestScreenFrames.set(sender, frameData);
         }
 
         function playAudioData(sender, audioData) {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            
-            const buffer = audioContext.createBuffer(1, audioData.length, audioContext.sampleRate);
-            const channelData = buffer.getChannelData(0);
-            for (let i = 0; i < audioData.length; i++) {
-                channelData[i] = audioData[i];
-            }
-            
-            const source = audioContext.createBufferSource();
-            source.buffer = buffer;
-            source.connect(audioContext.destination);
-            source.start();
-            
-            // Visual indicator
-            const indicator = document.getElementById(`vol-${sender}`);
-            if (indicator) {
-                indicator.classList.add('active');
-                setTimeout(() => indicator.classList.remove('active'), 100);
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                }
+                
+                // Create audio buffer
+                const buffer = audioContext.createBuffer(1, audioData.length, audioContext.sampleRate);
+                const channelData = buffer.getChannelData(0);
+                
+                for (let i = 0; i < audioData.length; i++) {
+                    channelData[i] = audioData[i];
+                }
+                
+                // Play the audio
+                const source = audioContext.createBufferSource();
+                source.buffer = buffer;
+                
+                // Add gain control for volume
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 1.5; // Boost volume slightly
+                
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                source.start(0);
+                
+                // Visual indicator
+                const indicator = document.getElementById(`vol-${sender}`);
+                if (indicator) {
+                    indicator.classList.add('active');
+                    setTimeout(() => indicator.classList.remove('active'), 150);
+                }
+            } catch (error) {
+                console.error('Error playing audio:', error);
             }
         }
     </script>
