@@ -1,4 +1,4 @@
-# --- FIXED SERVER COMPONENT ---
+# --- FIXED SERVER COMPONENT WITH VOICE CHAT ---
 # Requires: pip install websockets
 import asyncio
 import websockets
@@ -21,11 +21,12 @@ async def unregister_user(websocket):
     print(f"User disconnected. Total users: {len(CONNECTED_USERS)}")
 
 async def broadcast_message(message_data, sender_websocket=None):
-    """Sends a message to all connected clients."""
+    """Sends a message to all connected clients except the sender."""
     message_json = json.dumps(message_data)
     
     # Create a list to avoid issues if the set changes during iteration
-    users_to_send = list(CONNECTED_USERS)
+    # Exclude the sender from the broadcast
+    users_to_send = [user for user in CONNECTED_USERS if user != sender_websocket]
     
     # Send to all users concurrently, handling potential errors
     if users_to_send:
@@ -41,7 +42,11 @@ async def broadcast_message(message_data, sender_websocket=None):
                 # Remove failed connections
                 CONNECTED_USERS.discard(user)
     
-    print(f"Broadcasted: {message_data.get('sender', 'Unknown')}: {message_data.get('content', '')}")
+    msg_type = message_data.get('type', 'text')
+    if msg_type == 'text':
+        print(f"Broadcasted text: {message_data.get('sender', 'Unknown')}: {message_data.get('content', '')}")
+    elif msg_type == 'audio':
+        print(f"Broadcasted audio from: {message_data.get('sender', 'Unknown')}")
 
 async def server_handler(websocket): 
     """The main handler for a new client connection."""
@@ -56,7 +61,7 @@ async def server_handler(websocket):
                 # Add a timestamp to the message before broadcasting
                 data['timestamp'] = datetime.now().strftime("%H:%M:%S")
                 
-                # Broadcast the received message to everyone
+                # Broadcast the received message to everyone EXCEPT the sender
                 await broadcast_message(data, sender_websocket=websocket)
             except json.JSONDecodeError as e:
                 print(f"Invalid JSON received: {e}")
@@ -79,22 +84,26 @@ async def server_handler(websocket):
 
 async def main():
     print(f"Running server file from: {os.path.abspath(sys.argv[0])}")
-    print("Starting WebSocket server...")
+    print("Starting WebSocket server with voice chat support...")
     
     # Small delay to ensure port is available
     await asyncio.sleep(0.5)
     
+    # Use PORT from environment variable (for Render) or default to 8765
+    port = int(os.environ.get('PORT', 8765))
+    
     try:
-        # Create the server
+        # Create the server with larger message size limit for audio data
         server = await websockets.serve(
             server_handler, 
             "0.0.0.0", 
-            8765,
+            port,
             ping_interval=20,  # Send ping every 20 seconds
-            ping_timeout=10    # Wait 10 seconds for pong response
+            ping_timeout=10,   # Wait 10 seconds for pong response
+            max_size=10 * 1024 * 1024  # 10MB max message size for audio
         )
         
-        print("Python WebSocket Server started on ws://0.0.0.0:8765")
+        print(f"Python WebSocket Server started on ws://0.0.0.0:{port}")
         print("Press Ctrl+C to stop the server")
         
         # Keep the server running indefinitely
