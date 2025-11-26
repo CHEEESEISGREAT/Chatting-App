@@ -93,14 +93,14 @@ async def main():
     port = int(os.environ.get('PORT', 8765))
     
     try:
-        # Create the server with larger message size limit for audio data
+        # Create the server with larger message size limit for audio/video data
         server = await websockets.serve(
             server_handler, 
             "0.0.0.0", 
             port,
             ping_interval=20,  # Send ping every 20 seconds
             ping_timeout=10,   # Wait 10 seconds for pong response
-            max_size=10 * 1024 * 1024  # 10MB max message size for audio
+            max_size=50 * 1024 * 1024  # 50MB max message size for screen sharing and audio
         )
         
         print(f"Python WebSocket Server started on ws://0.0.0.0:{port}")
