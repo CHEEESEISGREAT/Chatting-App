@@ -1,4 +1,4 @@
-# --- FIXED SERVER COMPONENT WITH VOICE CHAT ---
+# --- COMPLETE SERVER WITH GUILDS ---
 # Requires: pip install websockets
 import asyncio
 import websockets
@@ -6,70 +6,214 @@ import json
 from datetime import datetime
 import os
 import sys
+import uuid
 
-# A set to keep track of all currently connected users
-CONNECTED_USERS = set()
+# Server state
+CONNECTED_USERS = {}  # websocket -> user_data
+GUILDS = {}  # guild_id -> guild_data
+MESSAGE_HISTORY = {}  # guild_id -> [messages]
+VOICE_STATE = {}  # guild_id -> {user: True}
+SCREEN_STATE = {}  # guild_id -> {user: True}
 
-async def handle_new_user(websocket):
+def create_guild(name, owner):
+    """Create a new guild with invite code"""
+    guild_id = str(uuid.uuid4())[:8]
+    invite_code = str(uuid.uuid4())[:6].upper()
+    
+    GUILDS[guild_id] = {
+        'id': guild_id,
+        'name': name,
+        'owner': owner,
+        'invite_code': invite_code,
+        'members': [owner]
+    }
+    MESSAGE_HISTORY[guild_id] = []
+    VOICE_STATE[guild_id] = {}
+    SCREEN_STATE[guild_id] = {}
+    
+    return GUILDS[guild_id]
+
+def join_guild(invite_code, username):
+    """Join a guild using invite code"""
+    for guild_id, guild in GUILDS.items():
+        if guild['invite_code'] == invite_code:
+            if username not in guild['members']:
+                guild['members'].append(username)
+            return guild
+    return None
+
+async def handle_new_user(websocket, username):
     """Adds a new user to the set of connected users."""
-    CONNECTED_USERS.add(websocket)
-    print(f"User connected. Total users: {len(CONNECTED_USERS)}")
+    CONNECTED_USERS[websocket] = {'username': username, 'guild': None}
+    print(f"User connected: {username}. Total users: {len(CONNECTED_USERS)}")
 
 async def unregister_user(websocket):
     """Removes a user from the connected set upon disconnection."""
-    CONNECTED_USERS.discard(websocket)
-    print(f"User disconnected. Total users: {len(CONNECTED_USERS)}")
+    if websocket in CONNECTED_USERS:
+        user_data = CONNECTED_USERS[websocket]
+        username = user_data['username']
+        guild_id = user_data.get('guild')
+        
+        # Remove from voice/screen state
+        if guild_id:
+            if guild_id in VOICE_STATE and username in VOICE_STATE[guild_id]:
+                del VOICE_STATE[guild_id][username]
+                await broadcast_to_guild(guild_id, {
+                    'type': 'voice_leave',
+                    'sender': username
+                }, None)
+            
+            if guild_id in SCREEN_STATE and username in SCREEN_STATE[guild_id]:
+                del SCREEN_STATE[guild_id][username]
+                await broadcast_to_guild(guild_id, {
+                    'type': 'screen_stop',
+                    'sender': username
+                }, None)
+        
+        del CONNECTED_USERS[websocket]
+        print(f"User disconnected: {username}. Total users: {len(CONNECTED_USERS)}")
 
-async def broadcast_message(message_data, sender_websocket=None):
-    """Sends a message to all connected clients except the sender."""
+async def broadcast_to_guild(guild_id, message_data, sender_websocket=None):
+    """Sends a message to all users in a specific guild except sender."""
     message_json = json.dumps(message_data)
     
-    # Create a list to avoid issues if the set changes during iteration
-    # Exclude the sender from the broadcast
-    users_to_send = [user for user in CONNECTED_USERS if user != sender_websocket]
+    # Get all users in this guild except sender
+    users_to_send = [
+        ws for ws, data in CONNECTED_USERS.items() 
+        if data.get('guild') == guild_id and ws != sender_websocket
+    ]
     
-    # Send to all users concurrently, handling potential errors
     if users_to_send:
         results = await asyncio.gather(
             *[user.send(message_json) for user in users_to_send],
             return_exceptions=True
         )
         
-        # Check for and log any send failures
         for user, result in zip(users_to_send, results):
             if isinstance(result, Exception):
                 print(f"Failed to send to a user: {result}")
-                # Remove failed connections
-                CONNECTED_USERS.discard(user)
-    
-    msg_type = message_data.get('type', 'text')
-    if msg_type == 'text':
-        print(f"Broadcasted text: {message_data.get('sender', 'Unknown')}: {message_data.get('content', '')}")
-    elif msg_type == 'audio':
-        print(f"Broadcasted audio from: {message_data.get('sender', 'Unknown')}")
 
 async def server_handler(websocket): 
     """The main handler for a new client connection."""
-    await handle_new_user(websocket)
+    username = None
     
     try:
+        # Wait for initial auth message
+        auth_msg = await websocket.recv()
+        auth_data = json.loads(auth_msg)
+        
+        if auth_data.get('type') != 'auth':
+            await websocket.close()
+            return
+        
+        username = auth_data.get('username')
+        await handle_new_user(websocket, username)
+        
+        # Send initial guild list
+        guild_list = [
+            {'id': g['id'], 'name': g['name'], 'invite_code': g['invite_code']}
+            for g in GUILDS.values()
+            if username in g['members']
+        ]
+        await websocket.send(json.dumps({
+            'type': 'guild_list',
+            'guilds': guild_list
+        }))
+        
         async for message_json in websocket:
             try:
-                # Parse the incoming JSON message
                 data = json.loads(message_json)
+                msg_type = data.get('type')
                 
-                # Add a timestamp to the message before broadcasting
-                data['timestamp'] = datetime.now().strftime("%H:%M:%S")
+                if msg_type == 'create_guild':
+                    guild = create_guild(data['name'], username)
+                    await websocket.send(json.dumps({
+                        'type': 'guild_created',
+                        'guild': guild
+                    }))
                 
-                # Broadcast the received message to everyone EXCEPT the sender
-                await broadcast_message(data, sender_websocket=websocket)
+                elif msg_type == 'join_guild':
+                    guild = join_guild(data['invite_code'], username)
+                    if guild:
+                        await websocket.send(json.dumps({
+                            'type': 'guild_joined',
+                            'guild': guild
+                        }))
+                    else:
+                        await websocket.send(json.dumps({
+                            'type': 'error',
+                            'message': 'Invalid invite code'
+                        }))
+                
+                elif msg_type == 'switch_guild':
+                    guild_id = data['guild_id']
+                    if guild_id in GUILDS and username in GUILDS[guild_id]['members']:
+                        CONNECTED_USERS[websocket]['guild'] = guild_id
+                        
+                        # Send message history
+                        history = MESSAGE_HISTORY.get(guild_id, [])
+                        await websocket.send(json.dumps({
+                            'type': 'message_history',
+                            'messages': history
+                        }))
+                        
+                        # Send current voice state
+                        voice_users = list(VOICE_STATE.get(guild_id, {}).keys())
+                        await websocket.send(json.dumps({
+                            'type': 'voice_state',
+                            'users': voice_users
+                        }))
+                        
+                        # Send current screen share state
+                        screen_users = list(SCREEN_STATE.get(guild_id, {}).keys())
+                        await websocket.send(json.dumps({
+                            'type': 'screen_state',
+                            'users': screen_users
+                        }))
+                
+                elif msg_type == 'text':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id:
+                        data['timestamp'] = datetime.now().strftime("%H:%M:%S")
+                        MESSAGE_HISTORY[guild_id].append(data)
+                        await broadcast_to_guild(guild_id, data, websocket)
+                
+                elif msg_type == 'voice_join':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id:
+                        VOICE_STATE[guild_id][username] = True
+                        await broadcast_to_guild(guild_id, data, websocket)
+                
+                elif msg_type == 'voice_leave':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id and username in VOICE_STATE[guild_id]:
+                        del VOICE_STATE[guild_id][username]
+                        await broadcast_to_guild(guild_id, data, websocket)
+                
+                elif msg_type == 'voice_data':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id:
+                        await broadcast_to_guild(guild_id, data, websocket)
+                
+                elif msg_type == 'screen_start':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id:
+                        SCREEN_STATE[guild_id][username] = True
+                        await broadcast_to_guild(guild_id, data, websocket)
+                
+                elif msg_type == 'screen_stop':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id and username in SCREEN_STATE[guild_id]:
+                        del SCREEN_STATE[guild_id][username]
+                        await broadcast_to_guild(guild_id, data, websocket)
+                
+                elif msg_type == 'screen_frame':
+                    guild_id = CONNECTED_USERS[websocket].get('guild')
+                    if guild_id:
+                        await broadcast_to_guild(guild_id, data, websocket)
+                        
             except json.JSONDecodeError as e:
                 print(f"Invalid JSON received: {e}")
-                # Optionally send an error message back to the client
-                await websocket.send(json.dumps({
-                    "error": "Invalid JSON format",
-                    "timestamp": datetime.now().strftime("%H:%M:%S")
-                }))
             except Exception as e:
                 print(f"Error processing message: {e}")
                 
@@ -84,38 +228,29 @@ async def server_handler(websocket):
 
 async def main():
     print(f"Running server file from: {os.path.abspath(sys.argv[0])}")
-    print("Starting WebSocket server with voice chat support...")
+    print("Starting WebSocket server with guilds...")
     
-    # Small delay to ensure port is available
     await asyncio.sleep(0.5)
     
-    # Use PORT from environment variable (for Render) or default to 8765
     port = int(os.environ.get('PORT', 8765))
     
     try:
-        # Create the server with larger message size limit for audio/video data
         server = await websockets.serve(
             server_handler, 
             "0.0.0.0", 
             port,
-            ping_interval=20,  # Send ping every 20 seconds
-            ping_timeout=10,   # Wait 10 seconds for pong response
-            max_size=50 * 1024 * 1024  # 50MB max message size for screen sharing and audio
+            ping_interval=20,
+            ping_timeout=10,
+            max_size=50 * 1024 * 1024  # 50MB for screen/audio
         )
         
-        print(f"Python WebSocket Server started on ws://0.0.0.0:{port}")
-        print("Press Ctrl+C to stop the server")
+        print(f"Server started on ws://0.0.0.0:{port}")
+        print("Press Ctrl+C to stop")
         
-        # Keep the server running indefinitely
         await asyncio.Future()
     except OSError as e:
-        if e.errno == 98 or e.errno == 48:  # Address already in use
-            print(f"\nError: Port 8765 is already in use!")
-            print("Try one of these solutions:")
-            print("1. Stop the other process using port 8765")
-            print("2. Change the port number in the code")
-            print("3. On Linux/Mac, run: sudo lsof -i :8765")
-            print("   On Windows, run: netstat -ano | findstr :8765")
+        if e.errno == 98 or e.errno == 48:
+            print(f"\nError: Port {port} is already in use!")
         else:
             print(f"OS Error: {e}")
         raise
